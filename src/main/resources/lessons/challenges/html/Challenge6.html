@@ -100,6 +100,7 @@
         </div>
         <br/>
         <form class="attack-form" method="POST" name="form" action="challenge/flag">
+            {% csrf_token %}
             <div class="form-group">
                 <div class="input-group">
                     <div class="input-group-addon"><i class="fa fa-flag-checkered" aria-hidden="true"
@@ -111,7 +112,6 @@
                     <button type="submit" class="btn btn-primary">Submit flag</button>
                 </div>
             </div>
-
         </form>
 
         <br/>
