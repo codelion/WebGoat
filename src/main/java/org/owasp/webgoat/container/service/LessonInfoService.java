@@ -5,14 +5,13 @@ import org.owasp.webgoat.container.lessons.Lesson;
 import org.owasp.webgoat.container.lessons.LessonInfoModel;
 import org.owasp.webgoat.container.session.WebSession;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * LessonInfoService class.
  *
- * @author dm
- * @version $Id: $Id
  */
 @RestController
 @AllArgsConstructor
@@ -25,7 +24,7 @@ public class LessonInfoService {
    *
    * @return a {@link LessonInfoModel} object.
    */
-  @RequestMapping(path = "/service/lessoninfo.mvc", produces = "application/json")
+  @RequestMapping(path = "/service/lessoninfo.mvc", produces = "application/json", method = RequestMethod.POST)
   public @ResponseBody LessonInfoModel getLessonInfo() {
     Lesson lesson = webSession.getCurrentLesson();
     return new LessonInfoModel(lesson.getTitle(), false, false, false);
