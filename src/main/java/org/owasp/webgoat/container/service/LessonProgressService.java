@@ -9,12 +9,12 @@ import org.owasp.webgoat.container.session.WebSession;
 import org.owasp.webgoat.container.users.UserProgressRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * LessonProgressService class.
  *
- * @author webgoat
  */
 @Controller
 @RequiredArgsConstructor
@@ -29,7 +29,7 @@ public class LessonProgressService {
    *
    * @return list of assignments
    */
-  @RequestMapping(value = "/service/lessonoverview.mvc", produces = "application/json")
+  @RequestMapping(value = "/service/lessonoverview.mvc", method = RequestMethod.GET, produces = "application/json")
   @ResponseBody
   public List<LessonOverview> lessonOverview() {
     var userTracker = userTrackerRepository.findByUser(webSession.getUserName());
@@ -46,9 +46,6 @@ public class LessonProgressService {
 
   @AllArgsConstructor
   @Getter
-  // Jackson does not really like returning a map of <Assignment, Boolean> directly, see
-  // http://stackoverflow.com/questions/11628698/can-we-make-object-as-key-in-map-when-using-json
-  // so creating intermediate object is the easiest solution
   private static class LessonOverview {
 
     private Assignment assignment;
