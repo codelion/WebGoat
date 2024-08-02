@@ -4,13 +4,12 @@ import org.owasp.webgoat.container.lessons.Lesson;
 import org.owasp.webgoat.container.session.WebSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * LessonTitleService class.
  *
- * @author dm
- * @version $Id: $Id
  */
 @Controller
 public class LessonTitleService {
@@ -26,7 +25,7 @@ public class LessonTitleService {
    *
    * @return a {@link java.lang.String} object.
    */
-  @RequestMapping(path = "/service/lessontitle.mvc", produces = "application/html")
+  @RequestMapping(path = "/service/lessontitle.mvc", produces = "application/html", method = RequestMethod.GET)
   public @ResponseBody String showPlan() {
     Lesson lesson = webSession.getCurrentLesson();
     return lesson != null ? lesson.getTitle() : "";
