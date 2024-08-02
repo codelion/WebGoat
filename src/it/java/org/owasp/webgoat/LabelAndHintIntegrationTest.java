@@ -168,10 +168,13 @@ public class LabelAndHintIntegrationTest extends IntegrationTest {
       // load a properties file
       prop.load(input);
     } catch (Exception e) {
-      e.printStackTrace();
+      // Handle the exception as needed, without exposing sensitive information
+      // Example: use a logging framework to log the exception securely
+      System.err.println("Error loading properties file for language: " + lang);
     }
     return prop;
   }
+
 
   private void checkLang(Properties propsDefault, String lang) {
     JsonPath jsonPath = getLabels(lang);
