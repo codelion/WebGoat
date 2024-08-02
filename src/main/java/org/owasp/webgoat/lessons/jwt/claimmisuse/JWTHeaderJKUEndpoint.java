@@ -9,6 +9,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.owasp.webgoat.container.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.container.assignments.AssignmentHints;
@@ -31,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 })
 public class JWTHeaderJKUEndpoint extends AssignmentEndpoint {
 
+  private static final Set<String> ALLOWED_JKU_HOSTS = Set.of("trustedhost.com", "anothertrustedhost.com");
+
   @PostMapping("/follow/{user}")
   public @ResponseBody String follow(@PathVariable("user") String user) {
     if ("Jerry".equals(user)) {
@@ -48,7 +51,11 @@ public class JWTHeaderJKUEndpoint extends AssignmentEndpoint {
       try {
         var decodedJWT = JWT.decode(token);
         var jku = decodedJWT.getHeaderClaim("jku");
-        JwkProvider jwkProvider = new JwkProviderBuilder(new URL(jku.asString())).build();
+        URL jkuUrl = new URL(jku.asString());
+        if (!ALLOWED_JKU_HOSTS.contains(jkuUrl.getHost())) {
+          return failed(this).feedback("jwt-invalid-token").build();
+        }
+        JwkProvider jwkProvider = new JwkProviderBuilder(jkuUrl).build();
         var jwk = jwkProvider.get(decodedJWT.getKeyId());
         var algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey());
         JWT.require(algorithm).build().verify(decodedJWT);
