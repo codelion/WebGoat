@@ -34,11 +34,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.apache.commons.text.StringEscapeUtils; // Add this import
+
 /**
  * Assignment for picking a good security question.
  *
- * @author Tobias Melzer
- * @since 11.12.18
  */
 @RestController
 public class SecurityQuestionAssignment extends AssignmentEndpoint {
@@ -97,12 +97,12 @@ public class SecurityQuestionAssignment extends AssignmentEndpoint {
     if (answer.isPresent()) {
       triedQuestions.incr(question);
       if (triedQuestions.isComplete()) {
-        return success(this).output("<b>" + answer + "</b>").build();
+        return success(this).output("<b>" + StringEscapeUtils.escapeHtml4(answer.toString()) + "</b>").build(); // Escaping the output
       }
     }
     return informationMessage(this)
         .feedback("password-questions-one-successful")
-        .output(answer.orElse("Unknown question, please try again..."))
+        .output(StringEscapeUtils.escapeHtml4(answer.orElse("Unknown question, please try again..."))) // Escaping the output
         .build();
   }
 }
