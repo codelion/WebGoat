@@ -36,8 +36,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author nbaars
- * @since 6/13/17.
+ * Author: nbaars
+ * Since: 6/13/17.
  */
 @RestController
 @RequestMapping("SqlInjectionMitigations/servers")
@@ -68,11 +68,21 @@ public class Servers {
     List<Server> servers = new ArrayList<>();
 
     try (var connection = dataSource.getConnection()) {
-      try (var statement =
-          connection.prepareStatement(
-              "select id, hostname, ip, mac, status, description from SERVERS where status <> 'out"
-                  + " of order' order by "
-                  + column)) {
+      // Manually validate the 'column' parameter against a list of allowed column names to prevent SQL injection
+      String[] allowedColumns = {"id", "hostname", "ip", "mac", "status", "description"};
+      boolean validColumn = false;
+      for (String allowedColumn : allowedColumns) {
+          if (allowedColumn.equalsIgnoreCase(column)) {
+              validColumn = true;
+              break;
+          }
+      }
+      if (!validColumn) {
+          throw new IllegalArgumentException("Invalid column name: " + column);
+      }
+      
+      String query = "SELECT id, hostname, ip, mac, status, description FROM SERVERS WHERE status <> 'out of order' ORDER BY " + column;
+      try (var statement = connection.prepareStatement(query)) {
         try (var rs = statement.executeQuery()) {
           while (rs.next()) {
             Server server =
