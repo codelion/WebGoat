@@ -64,8 +64,16 @@ public class SpoofCookieAssignment extends AssignmentEndpoint {
   public AttackResult login(
       @RequestParam String username,
       @RequestParam String password,
+      @RequestParam String csrfToken,
       @CookieValue(value = COOKIE_NAME, required = false) String cookieValue,
-      HttpServletResponse response) {
+      HttpServletResponse response,
+      HttpServletRequest request) {
+
+    // Validate CSRF token
+    String sessionToken = (String) request.getSession().getAttribute("CSRF_TOKEN");
+    if (sessionToken == null || !sessionToken.equals(csrfToken)) {
+      return failed(this).feedback("spoofcookie.invalid-csrf-token").build();
+    }
 
     if (StringUtils.isEmpty(cookieValue)) {
       return credentialsLoginFlow(username, password, response);
@@ -78,6 +86,8 @@ public class SpoofCookieAssignment extends AssignmentEndpoint {
   public void cleanup(HttpServletResponse response) {
     Cookie cookie = new Cookie(COOKIE_NAME, "");
     cookie.setMaxAge(0);
+    cookie.setSecure(true);
+    cookie.setHttpOnly(true);
     response.addCookie(cookie);
   }
 
@@ -95,6 +105,7 @@ public class SpoofCookieAssignment extends AssignmentEndpoint {
       Cookie newCookie = new Cookie(COOKIE_NAME, newCookieValue);
       newCookie.setPath("/WebGoat");
       newCookie.setSecure(true);
+      newCookie.setHttpOnly(true);
       response.addCookie(newCookie);
       return informationMessage(this)
           .feedback("spoofcookie.login")
@@ -124,5 +135,12 @@ public class SpoofCookieAssignment extends AssignmentEndpoint {
     }
 
     return failed(this).feedback("spoofcookie.wrong-cookie").build();
+  }
+
+  @ModelAttribute
+  public void addCsrfToken(HttpServletRequest request, Model model) {
+    String csrfToken = UUID.randomUUID().toString();
+    request.getSession().setAttribute("CSRF_TOKEN", csrfToken);
+    model.addAttribute("csrfToken", csrfToken);
   }
 }
