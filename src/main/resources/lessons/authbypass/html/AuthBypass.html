@@ -24,6 +24,7 @@
                   method="POST" name="form"
                   successCallback="onBypassResponse"
                   action="auth-bypass/verify-account">
+                {% csrf_token %}
                 <p>Verify Your Account by answering the questions below:</p>
 
                 <p>What is the name of your favorite teacher?</p>
@@ -45,6 +46,7 @@
                   successCallback="onBypassResponse"
                   action="auth-bypass/verify-account"
                   style="display:none"><!-- start off hidden -->
+                {% csrf_token %}
                 <p>Please provide a new password for your account</p>
 
                 <p>Password:</p>

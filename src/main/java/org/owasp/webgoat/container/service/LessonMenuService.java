@@ -73,7 +73,7 @@ public class LessonMenuService {
    *
    * @return a {@link java.util.List} object.
    */
-  @RequestMapping(path = URL_LESSONMENU_MVC, produces = "application/json")
+  @RequestMapping(path = URL_LESSONMENU_MVC, produces = "application/json", method = RequestMethod.POST)
   public @ResponseBody List<LessonMenuItem> showLeftNav() {
     List<LessonMenuItem> menu = new ArrayList<>();
     List<Category> categories = course.getCategories();

@@ -47,14 +47,14 @@ public class SecurePasswordsAssignment extends AssignmentEndpoint {
     Strength strength = zxcvbn.measure(password);
 
     output.append("<b>Your Password: *******</b></br>");
-    output.append("<b>Length: </b>" + password.length() + "</br>");
+    output.append("<b>Length: </b>" + HtmlUtils.htmlEscape(String.valueOf(password.length())) + "</br>");
     output.append(
         "<b>Estimated guesses needed to crack your password: </b>"
-            + df.format(strength.getGuesses())
+            + HtmlUtils.htmlEscape(df.format(strength.getGuesses()))
             + "</br>");
     output.append(
         "<div style=\"float: left;padding-right: 10px;\"><b>Score: </b>"
-            + strength.getScore()
+            + HtmlUtils.htmlEscape(String.valueOf(strength.getScore()))
             + "/4 </div>");
     if (strength.getScore() <= 1) {
       output.append(
@@ -71,20 +71,20 @@ public class SecurePasswordsAssignment extends AssignmentEndpoint {
     }
     output.append(
         "<b>Estimated cracking time: </b>"
-            + calculateTime(
-                (long) strength.getCrackTimeSeconds().getOnlineNoThrottling10perSecond())
+            + HtmlUtils.htmlEscape(calculateTime(
+                (long) strength.getCrackTimeSeconds().getOnlineNoThrottling10perSecond()))
             + "</br>");
     if (strength.getFeedback().getWarning().length() != 0)
-      output.append("<b>Warning: </b>" + strength.getFeedback().getWarning() + "</br>");
+      output.append("<b>Warning: </b>" + HtmlUtils.htmlEscape(strength.getFeedback().getWarning()) + "</br>");
     // possible feedback: https://github.com/dropbox/zxcvbn/blob/master/src/feedback.coffee
     // maybe ask user to try also weak passwords to see and understand feedback?
     if (strength.getFeedback().getSuggestions().size() != 0) {
       output.append("<b>Suggestions:</b></br><ul>");
       for (String sug : strength.getFeedback().getSuggestions())
-        output.append("<li>" + sug + "</li>");
+        output.append("<li>" + HtmlUtils.htmlEscape(sug) + "</li>");
       output.append("</ul></br>");
     }
-    output.append("<b>Score: </b>" + strength.getScore() + "/4 </br>");
+    output.append("<b>Score: </b>" + HtmlUtils.htmlEscape(String.valueOf(strength.getScore())) + "/4 </br>");
 
     if (strength.getScore() >= 4)
       return success(this).feedback("securepassword-success").output(output.toString()).build();

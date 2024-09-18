@@ -23,10 +23,10 @@
 
 package org.owasp.webgoat.lessons.hijacksession.cas;
 
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoublePredicate;
 import java.util.function.Supplier;
@@ -45,7 +45,7 @@ import org.springframework.web.context.annotation.ApplicationScope;
 public class HijackSessionAuthenticationProvider implements AuthenticationProvider<Authentication> {
 
   private Queue<String> sessions = new LinkedList<>();
-  private static long id = new Random().nextLong() & Long.MAX_VALUE;
+  private static long id = new SecureRandom().nextLong() & Long.MAX_VALUE;
   protected static final int MAX_SESSIONS = 50;
 
   private static final DoublePredicate PROBABILITY_DOUBLE_PREDICATE = pr -> pr < 0.75;
@@ -94,3 +94,4 @@ public class HijackSessionAuthenticationProvider implements AuthenticationProvid
     return sessions.size();
   }
 }
+

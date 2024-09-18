@@ -60,7 +60,8 @@ public class SqlInjectionLesson10b extends AssignmentEndpoint {
     try {
       if (editor.isEmpty()) return failed(this).feedback("sql-injection.10b.no-code").build();
 
-      editor = editor.replaceAll("\\<.*?>", "");
+      // Sanitize the user input to prevent XSS
+      editor = org.apache.commons.lang3.StringEscapeUtils.escapeHtml4(editor);
 
       String regexSetsUpConnection = "(?=.*getConnection.*)";
       String regexUsesPreparedStatement = "(?=.*PreparedStatement.*)";

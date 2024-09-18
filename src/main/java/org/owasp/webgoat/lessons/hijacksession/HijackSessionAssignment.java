@@ -36,10 +36,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestHeader; // Added for CSRF token validation
+import java.security.SecureRandom;
+import java.util.Base64;
 
 /***
  *
- * @author Angel Olle Blazquez
+ * author Angel Olle Blazquez
  *
  */
 
@@ -54,6 +57,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class HijackSessionAssignment extends AssignmentEndpoint {
 
   private static final String COOKIE_NAME = "hijack_cookie";
+  private static final String CSRF_TOKEN_HEADER = "X-CSRF-TOKEN";
+  private static final String CSRF_COOKIE_NAME = "csrf_token";
 
   @Autowired HijackSessionAuthenticationProvider provider;
 
@@ -63,7 +68,13 @@ public class HijackSessionAssignment extends AssignmentEndpoint {
       @RequestParam String username,
       @RequestParam String password,
       @CookieValue(value = COOKIE_NAME, required = false) String cookieValue,
+      @RequestHeader(CSRF_TOKEN_HEADER) String csrfToken, // Added CSRF token
+      @CookieValue(value = CSRF_COOKIE_NAME, required = false) String csrfCookie, // CSRF cookie validation
       HttpServletResponse response) {
+
+    if (csrfToken == null || csrfCookie == null || !csrfToken.equals(csrfCookie)) {
+      return failed(this).message("CSRF token mismatch").build();
+    }
 
     Authentication authentication;
     if (StringUtils.isEmpty(cookieValue)) {
@@ -71,8 +82,10 @@ public class HijackSessionAssignment extends AssignmentEndpoint {
           provider.authenticate(
               Authentication.builder().name(username).credentials(password).build());
       setCookie(response, authentication.getId());
+      setCsrfToken(response); // Set CSRF token on successful login
     } else {
       authentication = provider.authenticate(Authentication.builder().id(cookieValue).build());
+      // CSRF token already validated above
     }
 
     if (authentication.isAuthenticated()) {
@@ -86,6 +99,20 @@ public class HijackSessionAssignment extends AssignmentEndpoint {
     Cookie cookie = new Cookie(COOKIE_NAME, cookieValue);
     cookie.setPath("/WebGoat");
     cookie.setSecure(true);
+    cookie.setHttpOnly(true); // Setting HttpOnly flag
     response.addCookie(cookie);
+  }
+
+  private void setCsrfToken(HttpServletResponse response) {
+    SecureRandom secureRandom = new SecureRandom();
+    byte[] tokenBytes = new byte[32];
+    secureRandom.nextBytes(tokenBytes);
+    String csrfToken = Base64.getEncoder().encodeToString(tokenBytes);
+
+    Cookie csrfCookie = new Cookie(CSRF_COOKIE_NAME, csrfToken);
+    csrfCookie.setPath("/WebGoat");
+    csrfCookie.setSecure(true);
+    csrfCookie.setHttpOnly(true);
+    response.addCookie(csrfCookie);
   }
 }

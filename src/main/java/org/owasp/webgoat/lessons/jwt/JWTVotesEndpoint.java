@@ -127,12 +127,29 @@ public class JWTVotesEndpoint extends AssignmentEndpoint {
               .setClaims(claims)
               .signWith(io.jsonwebtoken.SignatureAlgorithm.HS512, JWT_PASSWORD)
               .compact();
-      Cookie cookie = new Cookie("access_token", token);
-      response.addCookie(cookie);
+      Cookie accessTokenCookie = new Cookie("access_token", token);
+      accessTokenCookie.setHttpOnly(true);
+      accessTokenCookie.setSecure(true);
+      accessTokenCookie.setPath("/");
+      accessTokenCookie.setSameSite("Strict");
+      response.addCookie(accessTokenCookie);
+
+      String csrfToken = UUID.randomUUID().toString();
+      Cookie csrfTokenCookie = new Cookie("csrf_token", csrfToken);
+      csrfTokenCookie.setHttpOnly(false);
+      csrfTokenCookie.setSecure(true);
+      csrfTokenCookie.setPath("/");
+      csrfTokenCookie.setSameSite("Strict");
+      response.addCookie(csrfTokenCookie);
+
       response.setStatus(HttpStatus.OK.value());
       response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+      response.getWriter().write("{\"csrf_token\": \"" + csrfToken + "\"}");
     } else {
       Cookie cookie = new Cookie("access_token", "");
+      cookie.setHttpOnly(true);
+      cookie.setSecure(true);
+      cookie.setSameSite("Strict");
       response.addCookie(cookie);
       response.setStatus(HttpStatus.UNAUTHORIZED.value());
       response.setContentType(MediaType.APPLICATION_JSON_VALUE);

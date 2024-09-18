@@ -25,7 +25,9 @@ package org.owasp.webgoat.lessons.cryptography;
 import jakarta.servlet.http.HttpServletRequest;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Random;
+import java.security.SecureRandom;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import org.owasp.webgoat.container.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.container.assignments.AssignmentHints;
@@ -33,6 +35,7 @@ import org.owasp.webgoat.container.assignments.AttackResult;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,18 +46,19 @@ public class HashingAssignment extends AssignmentEndpoint {
 
   public static final String[] SECRETS = {"secret", "admin", "password", "123456", "passw0rd"};
 
-  @RequestMapping(path = "/crypto/hashing/md5", produces = MediaType.TEXT_HTML_VALUE)
+  @RequestMapping(path = "/crypto/hashing/md5", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
   @ResponseBody
   public String getMd5(HttpServletRequest request) throws NoSuchAlgorithmException {
 
     String md5Hash = (String) request.getSession().getAttribute("md5Hash");
     if (md5Hash == null) {
 
-      String secret = SECRETS[new Random().nextInt(SECRETS.length)];
+      String secret = SECRETS[new SecureRandom().nextInt(SECRETS.length)];
 
-      MessageDigest md = MessageDigest.getInstance("MD5");
-      md.update(secret.getBytes());
-      byte[] digest = md.digest();
+      SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+      Mac mac = Mac.getInstance("HmacSHA256");
+      mac.init(secretKey);
+      byte[] digest = mac.doFinal();
       md5Hash = DatatypeConverter.printHexBinary(digest).toUpperCase();
       request.getSession().setAttribute("md5Hash", md5Hash);
       request.getSession().setAttribute("md5Secret", secret);
@@ -62,14 +66,14 @@ public class HashingAssignment extends AssignmentEndpoint {
     return md5Hash;
   }
 
-  @RequestMapping(path = "/crypto/hashing/sha256", produces = MediaType.TEXT_HTML_VALUE)
+  @RequestMapping(path = "/crypto/hashing/sha256", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
   @ResponseBody
   public String getSha256(HttpServletRequest request) throws NoSuchAlgorithmException {
 
     String sha256 = (String) request.getSession().getAttribute("sha256");
     if (sha256 == null) {
-      String secret = SECRETS[new Random().nextInt(SECRETS.length)];
-      sha256 = getHash(secret, "SHA-256");
+      String secret = SECRETS[new SecureRandom().nextInt(SECRETS.length)];
+      sha256 = getHash(secret, "HmacSHA256");
       request.getSession().setAttribute("sha256Hash", sha256);
       request.getSession().setAttribute("sha256Secret", secret);
     }
@@ -97,9 +101,10 @@ public class HashingAssignment extends AssignmentEndpoint {
   }
 
   public static String getHash(String secret, String algorithm) throws NoSuchAlgorithmException {
-    MessageDigest md = MessageDigest.getInstance(algorithm);
-    md.update(secret.getBytes());
-    byte[] digest = md.digest();
+    SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(), algorithm);
+    Mac mac = Mac.getInstance(algorithm);
+    mac.init(secretKey);
+    byte[] digest = mac.doFinal();
     return DatatypeConverter.printHexBinary(digest).toUpperCase();
   }
 }

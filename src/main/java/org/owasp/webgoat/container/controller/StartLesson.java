@@ -24,7 +24,7 @@
  *
  * <p>Source for this application is maintained at https://github.com/WebGoat/WebGoat, a repository
  * for free software projects.
- *
+ * 
  * @author WebGoat
  * @version $Id: $Id
  * @since October 28, 2003
@@ -70,7 +70,8 @@ public class StartLesson {
 
   @RequestMapping(
       value = {"*.lesson"},
-      produces = "text/html")
+      produces = "text/html",
+      method = {RequestMethod.GET})
   public ModelAndView lessonPage(HttpServletRequest request) {
     var model = new ModelAndView("lesson_content");
     var path = request.getRequestURL().toString(); // we now got /a/b/c/AccessControlMatrix.lesson
